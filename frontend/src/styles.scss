@@ -1,0 +1,88 @@
+/* ---- Opptra Pricing Optimizer · global design tokens & base styles ---- */
+
+:root {
+  --bg: #0b0f1a;
+  --surface: #131a2a;
+  --surface-2: #1b2438;
+  --border: #2a3650;
+  --text: #e8edf7;
+  --text-muted: #94a3c4;
+  --brand: #5b8cff;
+  --brand-soft: rgba(91, 140, 255, 0.15);
+
+  --danger: #ff5d6c;
+  --danger-soft: rgba(255, 93, 108, 0.14);
+  --success: #2fd09a;
+  --success-soft: rgba(47, 208, 154, 0.14);
+  --warn: #ffb547;
+  --warn-soft: rgba(255, 181, 71, 0.14);
+  --neutral: #94a3c4;
+  --neutral-soft: rgba(148, 163, 196, 0.12);
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(1200px 600px at 80% -10%, #182446 0%, var(--bg) 55%);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Shared chip / badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge--danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.badge--success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.badge--warn {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.badge--neutral {
+  background: var(--neutral-soft);
+  color: var(--neutral);
+}

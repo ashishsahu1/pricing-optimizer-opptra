@@ -1,0 +1,50 @@
+<section class="intro">
+  <h1>All pricing data</h1>
+  <p>9:00 AM snapshot · 8 SKUs across two marketplaces · prices in INR</p>
+</section>
+
+<div class="table-wrap">
+  <table class="data">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>Brand</th>
+        <th class="num">Our price</th>
+        <th class="num">Competitor</th>
+        <th class="num">Gap</th>
+        <th>Buy Box</th>
+        <th class="num">Margin floor</th>
+        <th>Last changed</th>
+        <th>Signal</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (s of rows(); track s.id) {
+        <tr [class.row--below]="s.competitorBelowFloor">
+          <td class="mono">{{ s.id }}</td>
+          <td>{{ s.brand }}</td>
+          <td class="num">{{ s.ourPrice | inr }}</td>
+          <td class="num">{{ s.competitorPrice | inr }}</td>
+          <td class="num" [class.neg]="s.priceGap < 0" [class.pos]="s.priceGap > 0">
+            {{ s.priceGap > 0 ? '+' : '' }}{{ s.priceGap }}
+          </td>
+          <td>
+            <span class="badge" [class.badge--success]="s.buyBox === 'Won'"
+              [class.badge--danger]="s.buyBox === 'Lost'">{{ s.buyBox }}</span>
+          </td>
+          <td class="num">{{ s.marginFloor | inr }}</td>
+          <td class="muted">{{ s.lastChanged }}</td>
+          <td>
+            <span class="tag tag--{{ s.category }}">{{ categoryLabel(s) }}</span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<p class="note">
+  <strong>SKU-007</strong> is flagged: the competitor (Rs.399) is pricing below our margin floor
+  (Rs.420). Matching it would breach the floor, so it is surfaced as <em>no action possible</em>
+  rather than a repricing opportunity.
+</p>

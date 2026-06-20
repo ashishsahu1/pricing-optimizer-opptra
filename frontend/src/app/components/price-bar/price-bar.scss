@@ -1,0 +1,95 @@
+.bar {
+  position: relative;
+  height: 64px;
+  margin: 30px 14px 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--surface-2), #223052);
+  border: 1px solid var(--border);
+}
+
+/* shaded region below the margin floor (no-profit territory) */
+.bar__floorzone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 999px 0 0 999px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--danger-soft),
+    var(--danger-soft) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+.bar__floorline {
+  position: absolute;
+  top: -6px;
+  bottom: -6px;
+  width: 2px;
+  background: var(--danger);
+  opacity: 0.7;
+}
+
+.marker {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.marker__dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 3px solid var(--bg);
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+.marker__tag {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+}
+
+.marker__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.marker__value {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* alternate tags above / below the track so they don't collide */
+.marker--ours .marker__tag {
+  bottom: 22px;
+}
+.marker--competitor .marker__tag {
+  top: 22px;
+}
+.marker--floor .marker__tag {
+  bottom: 22px;
+}
+
+.marker--ours {
+  color: var(--brand);
+}
+.marker--competitor {
+  color: var(--warn);
+}
+.marker--floor {
+  color: var(--danger);
+}
+.marker--floor .marker__dot {
+  width: 12px;
+  height: 12px;
+}

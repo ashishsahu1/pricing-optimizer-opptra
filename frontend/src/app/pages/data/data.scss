@@ -1,0 +1,126 @@
+.intro {
+  margin-bottom: 24px;
+}
+
+.intro h1 {
+  font-size: 28px;
+}
+
+.intro p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data th,
+.data td {
+  padding: 13px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.data thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.data tbody tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.data tbody tr:last-child {
+  border-bottom: none;
+}
+
+.data tbody tr:hover {
+  background: rgba(91, 140, 255, 0.05);
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono {
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--text-muted);
+}
+
+.neg {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.pos {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.row--below {
+  background: var(--danger-soft);
+}
+
+.row--below:hover {
+  background: var(--danger-soft);
+}
+
+.tag {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tag--LOST_RECOVERABLE {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.tag--WON_HEADROOM {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.tag--BELOW_FLOOR {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+.tag--HOLD {
+  background: var(--neutral-soft);
+  color: var(--neutral);
+}
+
+.note {
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: var(--warn-soft);
+  border: 1px solid rgba(255, 181, 71, 0.3);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text);
+}
+
+.note strong {
+  color: var(--warn);
+}

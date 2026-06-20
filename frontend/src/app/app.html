@@ -1,0 +1,21 @@
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark">◧</span>
+      <div>
+        <div class="brand__name">Opptra <span>Pricing Optimizer</span></div>
+        <div class="brand__sub">Buy Box signal · 9:00 AM snapshot</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="nav__link--active" [routerLinkActiveOptions]="{ exact: true }"
+        class="nav__link">Signal</a>
+      <a routerLink="/data" routerLinkActive="nav__link--active" class="nav__link">All data</a>
+    </nav>
+  </header>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>
