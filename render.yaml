@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: opptra-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.4
+      # Optional — add these in the Render dashboard for real LLM recommendations.
+      # Without them the agent falls back to a deterministic template.
+      # - key: FOUNDRY_ENDPOINT
+      #   sync: false
+      # - key: FOUNDRY_API_KEY
+      #   sync: false
+      # - key: FOUNDRY_MODEL
+      #   sync: false
