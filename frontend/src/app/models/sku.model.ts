@@ -56,3 +56,60 @@ export interface ApplyResult {
   message: string;
   sku: SkuSignal | null;
 }
+
+/** Where a persona curve came from: the LLM agent or the deterministic model. */
+export type PersonaSource = 'foundry' | 'model';
+
+/** A buyer persona on the simulation panel. */
+export interface Persona {
+  id: string;
+  name: string;
+  emoji: string;
+  blurb: string;
+}
+
+/** One (persona × price) cell of the heatmap. */
+export interface SimulationCell {
+  price: number;
+  /** 0–1 chance this persona buys at this price. */
+  buyProbability: number;
+  belowFloor: boolean;
+}
+
+/** One persona's buy-probability curve across the price ladder. */
+export interface PersonaRow {
+  personaId: string;
+  name: string;
+  emoji: string;
+  blurb: string;
+  source: PersonaSource;
+  cells: SimulationCell[];
+}
+
+/** Aggregate signal for one price across the whole panel. */
+export interface PriceColumn {
+  price: number;
+  belowFloor: boolean;
+  /** Mean buy-probability — the share of the panel that purchases. */
+  expectedDemand: number;
+  /** price × demand. */
+  revenueIndex: number;
+  /** (price − floor) × demand, 0 below floor. */
+  profitIndex: number;
+}
+
+/** Full persona-simulation heatmap payload for one SKU. */
+export interface SimulationResult {
+  id: string;
+  brand: string;
+  ourPrice: number;
+  competitorPrice: number;
+  marginFloor: number;
+  buyBox: BuyBoxStatus;
+  ladder: number[];
+  personas: PersonaRow[];
+  columns: PriceColumn[];
+  /** Floor-safe, profit-maximising price. */
+  bestPrice: number | null;
+  source: PersonaSource;
+}

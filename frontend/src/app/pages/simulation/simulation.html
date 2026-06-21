@@ -1,0 +1,183 @@
+<!-- ============ banners ============ -->
+@if (api.loading()) {
+  <div class="banner banner--info">Loading SKUs…</div>
+}
+@if (api.error(); as err) {
+  <div class="banner banner--error">
+    <span>{{ err }}</span>
+    <button class="btn btn--ghost" (click)="api.load()">Retry</button>
+  </div>
+}
+
+@if (!api.loading() && api.skus().length) {
+<div class="sim">
+
+  <!-- ============ intro ============ -->
+  <header class="intro">
+    <div>
+      <h1>Persona Demand Simulation</h1>
+      <p>
+        Pick a product and turn loose a panel of AI buyer personas across a ladder of
+        prices. Each square is one persona's odds of buying at that price — darker means
+        more likely. Find the price the <strong>whole market</strong> rewards.
+      </p>
+    </div>
+    <div class="intro__source">
+      @if (result(); as r) {
+        <span class="badge" [class.badge--success]="r.source === 'foundry'"
+              [class.badge--neutral]="r.source === 'model'">
+          {{ r.source === 'foundry' ? 'AI personas (Foundry)' : 'Modelled personas' }}
+        </span>
+      } @else {
+        <span class="badge badge--neutral">
+          {{ api.foundryConfigured() ? 'AI personas ready' : 'Modelled personas' }}
+        </span>
+      }
+    </div>
+  </header>
+
+  <!-- ============ controls ============ -->
+  <div class="controls">
+    <div class="picker">
+      <label class="picker__label">Choose a SKU</label>
+      <div class="picker__chips">
+        @for (s of api.skus(); track s.id) {
+          <button class="skuchip" [class.skuchip--active]="selectedId() === s.id"
+                  (click)="select(s.id)" [disabled]="running()">
+            <span class="mono">{{ s.id }}</span>
+            <span class="skuchip__brand">{{ s.brand }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    @if (selectedSku(); as s) {
+      <div class="runbar">
+        <div class="runbar__facts">
+          <span>Our price <strong>{{ s.ourPrice | inr }}</strong></span>
+          <span>Competitor <strong>{{ s.competitorPrice | inr }}</strong></span>
+          <span>Floor <strong>{{ s.marginFloor | inr }}</strong></span>
+          <span>Buy Box
+            <strong [class.win]="s.buyBox === 'Won'" [class.lose]="s.buyBox === 'Lost'">{{ s.buyBox }}</strong>
+          </span>
+        </div>
+        <button class="btn btn--primary" (click)="run()" [disabled]="running()">
+          @if (running()) { Simulating… } @else { Run simulation }
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- ============ heatmap ============ -->
+  @if (running() && !result()) {
+    <div class="placeholder">
+      <span class="spinner"></span>
+      <span>Polling {{ 5 }} personas across the price ladder…</span>
+    </div>
+  }
+
+  @if (result(); as r) {
+    <section class="board">
+
+      <!-- read-out strip -->
+      <div class="readout">
+        @if (hovered(); as h) {
+          <span class="readout__chip">{{ h.emoji }} {{ h.persona }}</span>
+          <span>buys at</span>
+          <span class="readout__price mono">{{ h.price | inr }}</span>
+          <span>with</span>
+          <span class="readout__prob">{{ percent(h.prob) }}%</span>
+          <span>probability</span>
+        } @else {
+          <span class="muted">Hover any square to read the exact odds.</span>
+        }
+      </div>
+
+      <!-- the grid: persona rows × price columns -->
+      <div class="grid" [style.--cols]="r.ladder.length">
+        <!-- header row: prices -->
+        <div class="grid__corner muted">persona ╲ price</div>
+        @for (col of r.columns; track col.price) {
+          <div class="grid__price" [class.grid__price--floor]="col.belowFloor"
+               [class.grid__price--best]="isBest(col)">
+            {{ col.price | inr }}
+            @if (isBest(col)) { <span class="grid__best-tag">best</span> }
+          </div>
+        }
+
+        <!-- persona rows -->
+        @for (row of r.personas; track row.personaId) {
+          <div class="grid__persona" [title]="row.blurb">
+            <span class="grid__emoji">{{ row.emoji }}</span>
+            <span class="grid__pname">{{ row.name }}</span>
+          </div>
+          @for (cell of row.cells; track cell.price) {
+            <div class="cell" [attr.data-level]="level(cell.buyProbability)"
+                 [class.cell--floor]="cell.belowFloor"
+                 (mouseenter)="hover(row.name, row.emoji, cell.price, cell.buyProbability)"
+                 (mouseleave)="clearHover()">
+            </div>
+          }
+        }
+      </div>
+
+      <!-- legend -->
+      <div class="legend">
+        <span class="muted">Won't buy</span>
+        <span class="legend__cell" data-level="0"></span>
+        <span class="legend__cell" data-level="1"></span>
+        <span class="legend__cell" data-level="2"></span>
+        <span class="legend__cell" data-level="3"></span>
+        <span class="legend__cell" data-level="4"></span>
+        <span class="muted">Will buy</span>
+        <span class="legend__sep"></span>
+        <span class="legend__floor"></span>
+        <span class="muted">below margin floor — never sellable</span>
+      </div>
+
+      <!-- aggregate demand / profit curve -->
+      <div class="aggregate">
+        <div class="aggregate__head">
+          <h2>Where the money is</h2>
+          <p class="muted">
+            Bars show expected profit (panel demand × margin over floor) at each price.
+            The tallest profitable bar is the sweet spot.
+          </p>
+        </div>
+        <div class="bars" [style.--cols]="r.columns.length">
+          @for (col of r.columns; track col.price) {
+            <div class="bar" [class.bar--best]="isBest(col)" [class.bar--floor]="col.belowFloor"
+                 [title]="(col.price | inr) + ' · demand ' + percent(col.expectedDemand) + '%'">
+              <div class="bar__col">
+                <div class="bar__fill" [style.height.%]="col.belowFloor ? 0 : profitHeight(col)"></div>
+              </div>
+              <div class="bar__price mono">{{ col.price | inr }}</div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- verdict -->
+      @if (r.bestPrice !== null) {
+        <div class="verdict">
+          <span class="verdict__icon">🎯</span>
+          <div>
+            <div class="verdict__title">
+              Best single price for <span class="mono">{{ r.id }}</span>:
+              <strong>{{ r.bestPrice | inr }}</strong>
+            </div>
+            <div class="verdict__sub muted">
+              Highest expected profit across the persona panel, and never below the
+              {{ r.marginFloor | inr }} floor.
+            </div>
+          </div>
+        </div>
+      }
+    </section>
+  } @else if (!running()) {
+    <div class="placeholder muted">
+      Select a SKU and hit <strong>Run simulation</strong> to paint the persona heatmap.
+    </div>
+  }
+</div>
+}

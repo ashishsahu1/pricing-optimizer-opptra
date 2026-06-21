@@ -12,7 +12,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from . import config
-from .schemas import ApplyResult, Recommendation, SkuSignal
+from .schemas import ApplyResult, Persona, Recommendation, SimulationResult, SkuSignal
 from .service import service
 
 app = FastAPI(
@@ -87,3 +87,18 @@ def reset() -> dict:
     """Restore the snapshot to its initial state (POC convenience)."""
     service.reset()
     return {"status": "reset"}
+
+
+@app.get("/api/personas", response_model=list[Persona])
+def list_personas() -> list[dict]:
+    """The buyer-persona panel used by the demand simulation."""
+    return service.personas()
+
+
+@app.post("/api/skus/{sku_id}/simulate", response_model=SimulationResult)
+def simulate_sku(sku_id: str) -> dict:
+    """Run the persona demand simulation for one SKU (the heatmap payload)."""
+    result = service.simulate(sku_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"{sku_id} not found")
+    return result

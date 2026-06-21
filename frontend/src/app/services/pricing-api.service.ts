@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 
 import { API_BASE } from './api.config';
-import { ApplyResult, Recommendation, SkuSignal, TriageCategory } from '../models/sku.model';
+import { ApplyResult, Recommendation, SimulationResult, SkuSignal, TriageCategory } from '../models/sku.model';
 
 /**
  * Talks to the FastAPI backend (the productised notebook pipeline) and exposes
@@ -118,5 +118,19 @@ export class PricingApiService {
       /* fall through to reload, which surfaces any error */
     }
     await this.load();
+  }
+
+  /** Run the persona demand simulation for one SKU (the heatmap payload). */
+  async simulate(id: string): Promise<SimulationResult | null> {
+    try {
+      return await firstValueFrom(
+        this.http.post<SimulationResult>(`${API_BASE}/skus/${id}/simulate`, {}),
+      );
+    } catch {
+      this._error.set(
+        `Could not run the persona simulation for ${id}. Is the backend running at ${API_BASE}?`,
+      );
+      return null;
+    }
   }
 }

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import copy
 
-from . import agent
+from . import agent, personas
 from .data import SKU_SNAPSHOT
 from .ml import WinProbabilityModel
 from .triage import CATEGORY_ORDER, triage
@@ -77,6 +77,22 @@ class PricingService:
     def recommendations(self) -> list[dict]:
         """Recommendations for all actionable SKUs (Lost first)."""
         return [self.recommendation(s["id"]) for s in self.actionable()]
+
+    # --- persona simulation --------------------------------------------------
+
+    def personas(self) -> list[dict]:
+        """The buyer-persona panel used by the demand simulation."""
+        return [
+            {"id": p["id"], "name": p["name"], "emoji": p["emoji"], "blurb": p["blurb"]}
+            for p in personas.PERSONAS
+        ]
+
+    def simulate(self, sku_id: str) -> dict | None:
+        """Run the persona demand simulation for one SKU. ``None`` if unknown."""
+        raw = next((s for s in self._skus if s["id"] == sku_id), None)
+        if raw is None:
+            return None
+        return personas.simulate(raw)
 
     # --- apply ---------------------------------------------------------------
 

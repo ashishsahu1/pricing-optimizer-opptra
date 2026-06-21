@@ -11,5 +11,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/story/story').then((m) => m.Story),
     title: 'Story · Opptra Pricing Optimizer',
   },
+  {
+    path: 'simulation',
+    loadComponent: () => import('./pages/simulation/simulation').then((m) => m.Simulation),
+    title: 'Persona Simulation · Opptra Pricing Optimizer',
+  },
   { path: '**', redirectTo: '' },
 ];

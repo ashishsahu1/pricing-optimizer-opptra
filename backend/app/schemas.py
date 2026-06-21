@@ -49,3 +49,62 @@ class ApplyResult(BaseModel):
     applied: bool
     message: str
     sku: Optional[SkuSignal] = None
+
+
+# --- persona demand simulation ----------------------------------------------
+
+PersonaSource = Literal["foundry", "model"]
+
+
+class Persona(BaseModel):
+    """A buyer persona on the simulation panel."""
+
+    id: str
+    name: str
+    emoji: str
+    blurb: str
+
+
+class SimulationCell(BaseModel):
+    """One (persona x price) cell of the heatmap."""
+
+    price: int
+    buyProbability: float   # 0..1 chance this persona buys at this price
+    belowFloor: bool
+
+
+class PersonaRow(BaseModel):
+    """One persona's buy-probability curve across the price ladder."""
+
+    personaId: str
+    name: str
+    emoji: str
+    blurb: str
+    source: PersonaSource
+    cells: list[SimulationCell]
+
+
+class PriceColumn(BaseModel):
+    """Aggregate signal for one price across the whole panel."""
+
+    price: int
+    belowFloor: bool
+    expectedDemand: float   # mean buy-probability (share of the panel)
+    revenueIndex: float     # price x demand
+    profitIndex: float      # (price - floor) x demand, 0 below floor
+
+
+class SimulationResult(BaseModel):
+    """Full heatmap payload for one SKU."""
+
+    id: str
+    brand: str
+    ourPrice: int
+    competitorPrice: int
+    marginFloor: int
+    buyBox: BuyBoxStatus
+    ladder: list[int]
+    personas: list[PersonaRow]
+    columns: list[PriceColumn]
+    bestPrice: Optional[int]   # floor-safe, profit-maximising price
+    source: PersonaSource
