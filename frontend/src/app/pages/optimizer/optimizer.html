@@ -1,6 +1,23 @@
 <!-- ============ banners ============ -->
 @if (api.loading()) {
-  <div class="banner banner--info">Loading SKUs…</div>
+  <div class="loader" aria-busy="true" aria-label="Loading SKUs">
+    <div class="loader__head">
+      <span class="loader__spinner"></span>
+      <div>
+        <div class="loader__title">Fetching the morning snapshot…</div>
+        <div class="loader__sub">Pulling SKUs and pricing the pipeline</div>
+      </div>
+    </div>
+    <div class="loader__skeleton">
+      @for (row of [1, 2, 3, 4, 5, 6]; track row) {
+        <div class="sk-row">
+          <span class="sk sk--dot"></span>
+          <span class="sk sk--line"></span>
+          <span class="sk sk--pill"></span>
+        </div>
+      }
+    </div>
+  </div>
 }
 @if (api.error(); as err) {
   <div class="banner banner--error">
