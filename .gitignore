@@ -1,0 +1,4 @@
+script-poc/
+.env
+*.env
+scripts/.env
