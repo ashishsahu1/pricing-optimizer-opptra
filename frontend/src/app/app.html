@@ -8,11 +8,18 @@
       </div>
     </div>
 
-    <nav class="nav">
-      <a routerLink="/" routerLinkActive="nav__link--active" [routerLinkActiveOptions]="{ exact: true }"
-        class="nav__link">Optimizer</a>
-      <a routerLink="/story" routerLinkActive="nav__link--active" class="nav__link">Story</a>
-    </nav>
+    @if (auth.isAuthenticated()) {
+      <nav class="nav">
+        <a routerLink="/" routerLinkActive="nav__link--active" [routerLinkActiveOptions]="{ exact: true }"
+          class="nav__link">Optimizer</a>
+        <a routerLink="/story" routerLinkActive="nav__link--active" class="nav__link">Story</a>
+      </nav>
+
+      <div class="account">
+        <span class="account__user">{{ auth.user() }}</span>
+        <button type="button" class="account__logout" (click)="logout()">Sign out</button>
+      </div>
+    }
   </header>
 
   <main class="content">

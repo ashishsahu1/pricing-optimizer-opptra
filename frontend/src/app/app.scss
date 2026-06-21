@@ -75,6 +75,35 @@
   color: #fff;
 }
 
+.account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account__user {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.account__logout {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.account__logout:hover {
+  color: var(--text);
+  border-color: var(--brand);
+}
+
 .content {
   max-width: 1180px;
   margin: 0 auto;
