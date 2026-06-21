@@ -1,7 +1,8 @@
-import { Component, computed, inject, signal, OnInit } from '@angular/core';
+import { Component, computed, inject, signal, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { InrPipe } from '../../pipes/inr.pipe';
+import { PersonaSim } from '../../components/persona-sim/persona-sim';
 import { PricingApiService } from '../../services/pricing-api.service';
 import { SkuSignal } from '../../models/sku.model';
 
@@ -26,7 +27,7 @@ const CATEGORY_LABEL: Record<string, { label: string; tone: 'good' | 'bad' | 'id
 @Component({
   selector: 'app-optimizer',
   standalone: true,
-  imports: [CommonModule, InrPipe],
+  imports: [CommonModule, InrPipe, PersonaSim],
   templateUrl: './optimizer.html',
   styleUrl: './optimizer.scss',
 })
@@ -43,6 +44,9 @@ export class Optimizer implements OnInit {
 
   /** True while "Process all" is walking the queue. */
   readonly batchRunning = signal(false);
+
+  /** The SKU whose buyer-persona simulation is open in the side drawer. */
+  readonly personaSku = signal<SkuSignal | null>(null);
 
   readonly active = computed<SkuSignal | null>(
     () => this.api.skus().find((s) => s.id === this.activeId()) ?? null,
@@ -116,6 +120,21 @@ export class Optimizer implements OnInit {
 
   async apply(id: string): Promise<void> {
     await this.api.apply(id);
+  }
+
+  /** Open the buyer-persona simulation drawer for one SKU. */
+  openPersona(sku: SkuSignal): void {
+    this.personaSku.set(sku);
+  }
+
+  /** Close the persona drawer. */
+  closePersona(): void {
+    this.personaSku.set(null);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.personaSku()) this.closePersona();
   }
 
   async reset(): Promise<void> {

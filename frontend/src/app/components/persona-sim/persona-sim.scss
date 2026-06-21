@@ -2,113 +2,29 @@
   display: block;
 }
 
-/* ---------- banners ---------- */
-.banner {
+/* ---------- header ---------- */
+.persona__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: var(--radius-sm);
+  gap: 14px;
+  flex-wrap: wrap;
   margin-bottom: 16px;
 }
-.banner--info {
-  background: var(--brand-soft);
-  color: var(--brand);
-}
-.banner--error {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-/* ---------- intro ---------- */
-.intro {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 22px;
-}
-.intro h1 {
-  font-size: 26px;
-  margin-bottom: 6px;
-}
-.intro p {
-  color: var(--text-muted);
-  max-width: 64ch;
-  margin: 0;
-}
-
-/* ---------- controls ---------- */
-.controls {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 22px;
-}
-.picker__label {
-  display: block;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 10px;
-}
-.picker__chips {
+.persona__facts {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-}
-.skuchip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font: inherit;
-  padding: 8px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  color: var(--text);
-  cursor: pointer;
-  transition: border-color 0.15s ease, background 0.15s ease;
-}
-.skuchip:hover:not(:disabled) {
-  border-color: var(--brand);
-}
-.skuchip:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-.skuchip--active {
-  border-color: var(--brand);
-  background: var(--brand-soft);
-}
-.skuchip__brand {
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-.runbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-.runbar__facts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 18px;
   color: var(--text-muted);
   font-size: 14px;
 }
-.runbar__facts strong {
+.persona__facts strong {
   color: var(--text);
+}
+.persona__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .win {
   color: var(--success);
@@ -131,13 +47,6 @@
 }
 
 /* ---------- board ---------- */
-.board {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px;
-}
-
 .readout {
   display: flex;
   align-items: center;
@@ -164,7 +73,7 @@
 /* ---------- the grid ---------- */
 .grid {
   display: grid;
-  grid-template-columns: 160px repeat(var(--cols), minmax(26px, 1fr));
+  grid-template-columns: 150px repeat(var(--cols), minmax(26px, 1fr));
   gap: 4px;
   align-items: center;
   overflow-x: auto;
@@ -225,7 +134,6 @@
   transform: scale(1.12);
   outline-color: var(--text);
 }
-/* GitHub-contribution-style 5-step green ramp. */
 .cell[data-level='0'] {
   background: rgba(148, 163, 196, 0.12);
 }
@@ -291,12 +199,12 @@
 
 /* ---------- aggregate ---------- */
 .aggregate {
-  margin-top: 28px;
-  padding-top: 20px;
+  margin-top: 26px;
+  padding-top: 18px;
   border-top: 1px solid var(--border);
 }
 .aggregate__head h2 {
-  font-size: 18px;
+  font-size: 17px;
   margin-bottom: 4px;
 }
 .aggregate__head p {
@@ -316,7 +224,7 @@
 }
 .bar__col {
   width: 100%;
-  height: 120px;
+  height: 110px;
   display: flex;
   align-items: flex-end;
   background: var(--neutral-soft);
@@ -353,7 +261,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-top: 28px;
+  margin-top: 26px;
   padding: 16px 18px;
   background: var(--success-soft);
   border: 1px solid rgba(47, 208, 154, 0.4);
@@ -403,7 +311,7 @@
   font-weight: 700;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  padding: 9px 16px;
+  padding: 8px 14px;
   cursor: pointer;
   transition: filter 0.15s ease, opacity 0.15s ease;
 }
@@ -413,10 +321,6 @@
 }
 .btn:not(:disabled):hover {
   filter: brightness(1.08);
-}
-.btn--primary {
-  background: var(--brand);
-  color: #fff;
 }
 .btn--ghost {
   background: transparent;

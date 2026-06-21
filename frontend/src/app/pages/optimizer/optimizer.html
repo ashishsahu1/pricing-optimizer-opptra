@@ -83,9 +83,14 @@
             <span class="mono pipeline__id">{{ s.id }}</span>
             <span class="pipeline__brand">{{ s.brand }}</span>
           </div>
-          <span class="pipeline__status" [attr.data-status]="run(s.id).status">
-            {{ run(s.id).status | titlecase }}
-          </span>
+          <div class="pipeline__head-actions">
+            <button class="btn btn--persona" (click)="openPersona(s)">
+              🧪 Buyer personas
+            </button>
+            <span class="pipeline__status" [attr.data-status]="run(s.id).status">
+              {{ run(s.id).status | titlecase }}
+            </span>
+          </div>
         </div>
 
         <ol class="steps">
@@ -196,4 +201,24 @@
     </section>
   </div>
 </div>
+}
+
+<!-- ============ buyer-persona side drawer ============ -->
+@if (personaSku(); as ps) {
+  <div class="drawer-backdrop" (click)="closePersona()"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Buyer persona simulation">
+    <header class="drawer__head">
+      <div>
+        <div class="drawer__title">
+          Buyer personas · <span class="mono">{{ ps.id }}</span>
+          <span class="drawer__brand">{{ ps.brand }}</span>
+        </div>
+        <div class="drawer__sub muted">How different shoppers respond at each price.</div>
+      </div>
+      <button class="drawer__close" (click)="closePersona()" aria-label="Close">✕</button>
+    </header>
+    <div class="drawer__body">
+      <app-persona-sim [sku]="ps" />
+    </div>
+  </aside>
 }

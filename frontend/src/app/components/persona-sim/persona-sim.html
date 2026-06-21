@@ -1,84 +1,36 @@
-<!-- ============ banners ============ -->
-@if (api.loading()) {
-  <div class="banner banner--info">Loading SKUs…</div>
-}
-@if (api.error(); as err) {
-  <div class="banner banner--error">
-    <span>{{ err }}</span>
-    <button class="btn btn--ghost" (click)="api.load()">Retry</button>
-  </div>
-}
-
-@if (!api.loading() && api.skus().length) {
-<div class="sim">
-
-  <!-- ============ intro ============ -->
-  <header class="intro">
-    <div>
-      <h1>Persona Demand Simulation</h1>
-      <p>
-        Pick a product and turn loose a panel of AI buyer personas across a ladder of
-        prices. Each square is one persona's odds of buying at that price — darker means
-        more likely. Find the price the <strong>whole market</strong> rewards.
-      </p>
+<div class="persona">
+  <!-- header: facts + source + re-run -->
+  <div class="persona__head">
+    <div class="persona__facts">
+      <span>Our price <strong>{{ sku.ourPrice | inr }}</strong></span>
+      <span>Competitor <strong>{{ sku.competitorPrice | inr }}</strong></span>
+      <span>Floor <strong>{{ sku.marginFloor | inr }}</strong></span>
+      <span>Buy Box
+        <strong [class.win]="sku.buyBox === 'Won'" [class.lose]="sku.buyBox === 'Lost'">{{ sku.buyBox }}</strong>
+      </span>
     </div>
-    <div class="intro__source">
+    <div class="persona__actions">
       @if (result(); as r) {
         <span class="badge" [class.badge--success]="r.source === 'foundry'"
               [class.badge--neutral]="r.source === 'model'">
           {{ r.source === 'foundry' ? 'AI personas (Foundry)' : 'Modelled personas' }}
         </span>
-      } @else {
-        <span class="badge badge--neutral">
-          {{ api.foundryConfigured() ? 'AI personas ready' : 'Modelled personas' }}
-        </span>
       }
+      <button class="btn btn--ghost" (click)="run()" [disabled]="running()">
+        @if (running()) { Running… } @else { Re-run }
+      </button>
     </div>
-  </header>
-
-  <!-- ============ controls ============ -->
-  <div class="controls">
-    <div class="picker">
-      <label class="picker__label">Choose a SKU</label>
-      <div class="picker__chips">
-        @for (s of api.skus(); track s.id) {
-          <button class="skuchip" [class.skuchip--active]="selectedId() === s.id"
-                  (click)="select(s.id)" [disabled]="running()">
-            <span class="mono">{{ s.id }}</span>
-            <span class="skuchip__brand">{{ s.brand }}</span>
-          </button>
-        }
-      </div>
-    </div>
-
-    @if (selectedSku(); as s) {
-      <div class="runbar">
-        <div class="runbar__facts">
-          <span>Our price <strong>{{ s.ourPrice | inr }}</strong></span>
-          <span>Competitor <strong>{{ s.competitorPrice | inr }}</strong></span>
-          <span>Floor <strong>{{ s.marginFloor | inr }}</strong></span>
-          <span>Buy Box
-            <strong [class.win]="s.buyBox === 'Won'" [class.lose]="s.buyBox === 'Lost'">{{ s.buyBox }}</strong>
-          </span>
-        </div>
-        <button class="btn btn--primary" (click)="run()" [disabled]="running()">
-          @if (running()) { Simulating… } @else { Run simulation }
-        </button>
-      </div>
-    }
   </div>
 
-  <!-- ============ heatmap ============ -->
   @if (running() && !result()) {
     <div class="placeholder">
       <span class="spinner"></span>
-      <span>Polling {{ 5 }} personas across the price ladder…</span>
+      <span>Polling 5 personas across the price ladder…</span>
     </div>
   }
 
   @if (result(); as r) {
     <section class="board">
-
       <!-- read-out strip -->
       <div class="readout">
         @if (hovered(); as h) {
@@ -95,7 +47,6 @@
 
       <!-- the grid: persona rows × price columns -->
       <div class="grid" [style.--cols]="r.ladder.length">
-        <!-- header row: prices -->
         <div class="grid__corner muted">persona ╲ price</div>
         @for (col of r.columns; track col.price) {
           <div class="grid__price" [class.grid__price--floor]="col.belowFloor"
@@ -105,7 +56,6 @@
           </div>
         }
 
-        <!-- persona rows -->
         @for (row of r.personas; track row.personaId) {
           <div class="grid__persona" [title]="row.blurb">
             <span class="grid__emoji">{{ row.emoji }}</span>
@@ -174,10 +124,5 @@
         </div>
       }
     </section>
-  } @else if (!running()) {
-    <div class="placeholder muted">
-      Select a SKU and hit <strong>Run simulation</strong> to paint the persona heatmap.
-    </div>
   }
 </div>
-}
