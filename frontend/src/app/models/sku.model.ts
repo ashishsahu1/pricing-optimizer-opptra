@@ -27,10 +27,32 @@ export interface SkuSignal extends Sku {
   marginHeadroom: number;
   /** True when the competitor is pricing below our margin floor. */
   competitorBelowFloor: boolean;
+  /** ML-derived Buy Box win probability at the current price (0–1). */
+  winProbNow: number;
   category: TriageCategory;
   /**
-   * A suggested price (rule-based placeholder until the AI layer is wired in).
-   * Always constrained to be >= marginFloor. Null when no action is possible.
+   * The price the system recommends. Always constrained to be >= marginFloor.
+   * Null when no profitable action is possible (BELOW_FLOOR).
    */
   suggestedPrice: number | null;
+  /** "Pending" until applied, then "Repriced". */
+  status: string;
+}
+
+/** A floor-safe, manager-ready recommendation for one SKU. */
+export interface Recommendation {
+  id: string;
+  category: TriageCategory;
+  suggestedPrice: number | null;
+  text: string;
+  /** Where the sentence came from: the LLM agent or the deterministic fallback. */
+  source: 'foundry' | 'template';
+}
+
+/** Result of applying a reprice (the one-click action). */
+export interface ApplyResult {
+  id: string;
+  applied: boolean;
+  message: string;
+  sku: SkuSignal | null;
 }

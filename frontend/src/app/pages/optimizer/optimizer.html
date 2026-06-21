@@ -1,0 +1,182 @@
+<!-- ============ banners ============ -->
+@if (api.loading()) {
+  <div class="banner banner--info">Loading SKUs…</div>
+}
+@if (api.error(); as err) {
+  <div class="banner banner--error">
+    <span>{{ err }}</span>
+    <button class="btn btn--ghost" (click)="api.load()">Retry</button>
+  </div>
+}
+
+@if (!api.loading() && !api.error() && api.skus().length) {
+<div class="optimizer">
+
+  <!-- ============ intro + toolbar ============ -->
+  <header class="intro">
+    <div>
+      <h1>Price Optimizer</h1>
+      <p>
+        Feed each SKU through the pipeline and watch the decision form, one stage at a
+        time: <strong>read → score → triage → recommend → apply</strong>.
+      </p>
+    </div>
+    <div class="intro__actions">
+      <span class="intro__progress">{{ processedCount() }} / {{ api.skus().length }} processed</span>
+      <button class="btn btn--primary" (click)="processAll()"
+              [disabled]="batchRunning() || processedCount() === api.skus().length">
+        @if (batchRunning()) { Processing… } @else { Process all }
+      </button>
+      <button class="btn btn--ghost" (click)="reset()" [disabled]="batchRunning()">Reset</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- ============ queue ============ -->
+    <aside class="queue">
+      <div class="queue__title">SKU queue</div>
+      @for (s of api.skus(); track s.id) {
+        <button class="qitem"
+                [class.qitem--active]="activeId() === s.id"
+                [attr.data-status]="run(s.id).status"
+                (click)="process(s.id)"
+                [disabled]="batchRunning()">
+          <span class="qitem__id mono">{{ s.id }}</span>
+          <span class="qitem__brand">{{ s.brand }}</span>
+          <span class="qitem__state">
+            @switch (run(s.id).status) {
+              @case ('done') {
+                <span class="chip" [attr.data-tone]="categoryTone(s.category)">
+                  {{ categoryLabel(s.category) }}
+                </span>
+              }
+              @case ('processing') { <span class="spinner"></span> }
+              @default { <span class="muted">Pending</span> }
+            }
+          </span>
+        </button>
+      }
+    </aside>
+
+    <!-- ============ live pipeline ============ -->
+    <section class="pipeline">
+      @if (active(); as s) {
+        <div class="pipeline__head">
+          <div>
+            <span class="mono pipeline__id">{{ s.id }}</span>
+            <span class="pipeline__brand">{{ s.brand }}</span>
+          </div>
+          <span class="pipeline__status" [attr.data-status]="run(s.id).status">
+            {{ run(s.id).status | titlecase }}
+          </span>
+        </div>
+
+        <ol class="steps">
+          <!-- 1. Ingest -->
+          <li class="step" [class.is-on]="reached(0)">
+            <span class="step__dot">{{ reached(0) ? '✓' : 1 }}</span>
+            <div class="step__body">
+              <div class="step__label">Ingest — read the shelf</div>
+              @if (reached(0)) {
+                <div class="step__content kv">
+                  <span>Our price <strong>{{ s.ourPrice | inr }}</strong></span>
+                  <span>Competitor <strong>{{ s.competitorPrice | inr }}</strong></span>
+                  <span>Buy Box
+                    <strong [class.win]="s.buyBox === 'Won'" [class.lose]="s.buyBox === 'Lost'">
+                      {{ s.buyBox }}</strong></span>
+                  <span>Floor <strong>{{ s.marginFloor | inr }}</strong></span>
+                </div>
+              }
+            </div>
+          </li>
+
+          <!-- 2. Win probability -->
+          <li class="step" [class.is-on]="reached(1)">
+            <span class="step__dot">{{ reached(1) ? '✓' : 2 }}</span>
+            <div class="step__body">
+              <div class="step__label">Win probability — will we win the Buy Box?</div>
+              @if (reached(1)) {
+                <div class="step__content">
+                  <div class="winbar">
+                    <div class="winbar__fill" [class.winbar__fill--low]="winPercent(s) < 50"
+                         [style.width.%]="winPercent(s)"></div>
+                  </div>
+                  <div class="winbar__label">
+                    <strong>{{ winPercent(s) }}%</strong> at the current {{ s.ourPrice | inr }}
+                  </div>
+                </div>
+              }
+            </div>
+          </li>
+
+          <!-- 3. Triage -->
+          <li class="step" [class.is-on]="reached(2)">
+            <span class="step__dot">{{ reached(2) ? '✓' : 3 }}</span>
+            <div class="step__body">
+              <div class="step__label">Triage — which bucket?</div>
+              @if (reached(2)) {
+                <div class="step__content">
+                  <span class="chip chip--lg" [attr.data-tone]="categoryTone(s.category)">
+                    {{ categoryLabel(s.category) }}
+                  </span>
+                </div>
+              }
+            </div>
+          </li>
+
+          <!-- 4. Recommendation -->
+          <li class="step" [class.is-on]="reached(3)">
+            <span class="step__dot">{{ reached(3) ? '✓' : 4 }}</span>
+            <div class="step__body">
+              <div class="step__label">Recommendation — the floor-safe fix</div>
+              @if (reached(3)) {
+                <div class="step__content">
+                  @if (s.suggestedPrice !== null) {
+                    <p class="reco-text">{{ api.recommendationFor(s.id)?.text }}</p>
+                  } @else {
+                    <p class="reco-text reco-text--blocked">
+                      🛡️ Below floor — no profitable price, no AI call. Flagged for a human.
+                    </p>
+                  }
+                </div>
+              }
+            </div>
+          </li>
+
+          <!-- 5. Decision / apply -->
+          <li class="step" [class.is-on]="reached(4)">
+            <span class="step__dot">{{ reached(4) ? '✓' : 5 }}</span>
+            <div class="step__body">
+              <div class="step__label">Decision — apply it</div>
+              @if (reached(4)) {
+                <div class="step__content">
+                  @if (s.suggestedPrice !== null) {
+                    <div class="decision">
+                      <div class="decision__prices">
+                        <span><small>now</small><strong>{{ s.ourPrice | inr }}</strong></span>
+                        <span class="decision__arrow">→</span>
+                        <span class="decision__target">
+                          <small>suggested</small><strong>{{ s.suggestedPrice | inr }}</strong>
+                        </span>
+                      </div>
+                      <button class="btn btn--apply" (click)="apply(s.id)"
+                              [disabled]="s.status === 'Repriced'">
+                        @if (s.status === 'Repriced') { Applied ✓ }
+                        @else { Apply {{ s.suggestedPrice | inr }} }
+                      </button>
+                    </div>
+                  } @else {
+                    <span class="muted">No action — left untouched on purpose.</span>
+                  }
+                </div>
+              }
+            </div>
+          </li>
+        </ol>
+      } @else {
+        <div class="pipeline__empty muted">Pick a SKU from the queue to process it.</div>
+      }
+    </section>
+  </div>
+</div>
+}

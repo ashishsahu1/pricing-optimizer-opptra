@@ -1,0 +1,291 @@
+<!-- ============ Loading / error ============ -->
+@if (api.loading()) {
+  <div class="banner banner--info">Loading the morning snapshot…</div>
+}
+@if (api.error(); as err) {
+  <div class="banner banner--error">
+    <span>{{ err }}</span>
+    <button class="btn btn--ghost" (click)="api.load()">Retry</button>
+  </div>
+}
+
+@if (!api.loading() && !api.error() && api.skus().length) {
+<div class="story">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <p class="hero__eyebrow">Opptra · Pricing Optimizer</p>
+    <h1 class="hero__title">
+      Stop reading dashboards.<br />
+      Start making <span class="grad">decisions</span>.
+    </h1>
+    <p class="hero__lede">
+      Ranjit prices hundreds of products every morning. Money is leaking somewhere —
+      but he can't <em>see</em> where. He doesn't want more numbers. He wants a tap on
+      the shoulder: <strong>“fix this one, here's the exact price, do it now.”</strong>
+    </p>
+    <p class="hero__lede">
+      That tap is this system. Here is one morning, end to end.
+    </p>
+    <a class="scroll-hint" href="#stage-1">See how it works ↓</a>
+  </section>
+
+  <!-- ============ THE TWO CHARACTERS ============ -->
+  <section class="cast">
+    @if (hero(); as h) {
+      <article class="cast-card cast-card--hero">
+        <span class="cast-card__tag">The opportunity</span>
+        <h3>{{ h.id }} — a {{ h.ourPrice | inr }} lamp</h3>
+        <p>
+          We sell at <strong>{{ h.ourPrice | inr }}</strong>, a competitor at
+          <strong>{{ h.competitorPrice | inr }}</strong>. We're pricier, so we
+          <strong>lost the Buy Box</strong> — basically invisible. But our floor is
+          {{ h.marginFloor | inr }}, so we have room to drop. <em>Fixable.</em>
+        </p>
+      </article>
+    }
+    @if (villain(); as v) {
+      <article class="cast-card cast-card--villain">
+        <span class="cast-card__tag">The trap</span>
+        <h3>{{ v.id }} — the money-loser</h3>
+        <p>
+          The competitor sells at <strong>{{ v.competitorPrice | inr }}</strong> —
+          that's <strong>below our cost floor</strong> of {{ v.marginFloor | inr }}.
+          A naive tool screams “undercut them!” and quietly loses money forever.
+          Watch the system refuse.
+        </p>
+      </article>
+    }
+  </section>
+
+  <!-- ============ STAGE 1 — INGEST ============ -->
+  <section class="stage" id="stage-1">
+    <header class="stage__head">
+      <span class="stage__num">1</span>
+      <div>
+        <h2>It reads the shelf</h2>
+        <p class="stage__sub">
+          Eight products, what we charge, what the competitor charges, and whether we're
+          winning the Buy Box — the “Buy Now” spot that gets ~80% of sales.
+        </p>
+      </div>
+    </header>
+
+    <div class="table-wrap">
+      <table class="snap">
+        <thead>
+          <tr>
+            <th>SKU</th><th>Brand</th><th class="r">Our price</th>
+            <th class="r">Competitor</th><th class="c">Buy Box</th><th class="r">Floor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (s of api.skus(); track s.id) {
+            <tr>
+              <td class="mono">{{ s.id }}</td>
+              <td>{{ s.brand }}</td>
+              <td class="r">{{ s.ourPrice | inr }}</td>
+              <td class="r">{{ s.competitorPrice | inr }}</td>
+              <td class="c">
+                <span class="pill" [class.pill--win]="s.buyBox === 'Won'"
+                      [class.pill--lose]="s.buyBox === 'Lost'">{{ s.buyBox }}</span>
+              </td>
+              <td class="r muted">{{ s.marginFloor | inr }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ STAGE 2 — ML WIN PROBABILITY ============ -->
+  <section class="stage">
+    <header class="stage__head">
+      <span class="stage__num">2</span>
+      <div>
+        <h2>It learns who's winning</h2>
+        <p class="stage__sub">
+          A small model studied the eight products and found the pattern itself:
+          <strong>cheaper than the competitor → we win; pricier → we lose.</strong>
+          Now it can score any price — so it can find the <em>highest</em> price that
+          still wins, giving up the least margin.
+        </p>
+      </div>
+    </header>
+
+    <div class="winlist">
+      @for (s of api.skus(); track s.id) {
+        <div class="winrow">
+          <span class="winrow__id mono">{{ s.id }}</span>
+          <div class="winrow__bar">
+            <div class="winrow__fill"
+                 [class.winrow__fill--low]="winPercent(s) < 50"
+                 [style.width.%]="winPercent(s)"></div>
+          </div>
+          <span class="winrow__pct">{{ winPercent(s) }}%</span>
+          <span class="winrow__note muted">chance of winning at {{ s.ourPrice | inr }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ============ STAGE 3 — TRIAGE ============ -->
+  <section class="stage">
+    <header class="stage__head">
+      <span class="stage__num">3</span>
+      <div>
+        <h2>It sorts every product into 4 buckets</h2>
+        <p class="stage__sub">
+          Only the green buckets are “act now”. That's the whole promise —
+          show the problem, not the data.
+        </p>
+      </div>
+    </header>
+
+    <div class="buckets">
+      @for (cat of bucketOrder; track cat) {
+        <div class="bucket" [attr.data-tone]="meta(cat).tone">
+          <div class="bucket__head">
+            <span class="bucket__icon">{{ meta(cat).icon }}</span>
+            <h3>{{ meta(cat).label }}</h3>
+            <span class="bucket__count">{{ api.byCategory()[cat].length }}</span>
+          </div>
+          <p class="bucket__blurb">{{ meta(cat).blurb }}</p>
+          <ul class="bucket__list">
+            @for (s of api.byCategory()[cat]; track s.id) {
+              <li><span class="mono">{{ s.id }}</span> {{ s.brand }}</li>
+            } @empty {
+              <li class="muted">—</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ============ STAGE 4 — AGENT ============ -->
+  <section class="stage">
+    <header class="stage__head">
+      <span class="stage__num">4</span>
+      <div>
+        <h2>It writes the recommendation</h2>
+        <p class="stage__sub">
+          The AI turns the facts and the target price into one manager-ready sentence.
+          <strong>Safety bit:</strong> the system reads the price back out of the AI's
+          own words and checks it's still above the floor. An unprofitable suggestion
+          can never reach the screen.
+        </p>
+      </div>
+    </header>
+
+    <div class="reco-source">
+      @if (api.foundryConfigured()) {
+        <span class="dot dot--live"></span> Live recommendations from Azure AI Foundry
+      } @else {
+        <span class="dot"></span> Deterministic template (add Foundry keys in
+        <code>backend/.env</code> for live AI)
+      }
+    </div>
+
+    <div class="recos">
+      @for (s of api.actionable(); track s.id) {
+        <article class="reco">
+          <div class="reco__left">
+            <span class="reco__cat" [attr.data-tone]="meta(s.category).tone">
+              {{ meta(s.category).label }}
+            </span>
+            <span class="mono reco__id">{{ s.id }}</span>
+          </div>
+          <p class="reco__text">{{ api.recommendationFor(s.id)?.text }}</p>
+        </article>
+      }
+    </div>
+
+    <!-- The guardrail, proven -->
+    @for (v of api.blocked(); track v.id) {
+      <article class="guardrail">
+        <span class="guardrail__icon">🛡️</span>
+        <div>
+          <strong>{{ v.id }} is blocked — and that's the point.</strong>
+          The competitor's {{ v.competitorPrice | inr }} is below our floor of
+          {{ v.marginFloor | inr }}. No price, no AI call, no money lost. Flagged for a
+          human instead.
+        </div>
+      </article>
+    }
+  </section>
+
+  <!-- ============ STAGE 5 — APPLY ============ -->
+  <section class="stage">
+    <header class="stage__head">
+      <span class="stage__num">5</span>
+      <div>
+        <h2>One click applies it</h2>
+        <p class="stage__sub">
+          The price flips, the status becomes <strong>Repriced</strong>, and it's live.
+          The floor is re-checked one final time before any change is written.
+        </p>
+      </div>
+    </header>
+
+    <div class="apply-toolbar">
+      <button class="btn btn--primary" (click)="applyAll()"
+              [disabled]="applying() !== null || pendingCount() === 0">
+        @if (applying() === 'ALL') { Applying… }
+        @else if (pendingCount() === 0) { All done ✓ }
+        @else { Apply all {{ pendingCount() }} fixes }
+      </button>
+      <button class="btn btn--ghost" (click)="reset()" [disabled]="applying() !== null">
+        Reset
+      </button>
+      <span class="apply-toolbar__tally">
+        {{ api.repricedCount() }} repriced
+      </span>
+    </div>
+
+    <div class="apply-grid">
+      @for (s of api.actionable(); track s.id) {
+        <article class="apply-card" [class.apply-card--done]="s.status === 'Repriced'">
+          <div class="apply-card__top">
+            <span class="mono">{{ s.id }}</span>
+            <span class="apply-card__status" [class.is-done]="s.status === 'Repriced'">
+              {{ s.status }}
+            </span>
+          </div>
+          <div class="apply-card__prices">
+            <div class="apply-card__price">
+              <small>now</small>
+              <strong>{{ s.ourPrice | inr }}</strong>
+            </div>
+            <span class="apply-card__arrow">→</span>
+            <div class="apply-card__price apply-card__price--target">
+              <small>suggested</small>
+              <strong>{{ s.suggestedPrice | inr }}</strong>
+            </div>
+          </div>
+          <div class="apply-card__meta muted">
+            {{ s.marginHeadroom | inr }} above floor · {{ winPercent(s) }}% win
+          </div>
+          <button class="btn btn--apply" (click)="apply(s.id)"
+                  [disabled]="s.status === 'Repriced' || applying() !== null">
+            @if (applying() === s.id) { Applying… }
+            @else if (s.status === 'Repriced') { Applied ✓ }
+            @else { Apply {{ s.suggestedPrice | inr }} }
+          </button>
+        </article>
+      }
+    </div>
+  </section>
+
+  <!-- ============ MORAL ============ -->
+  <section class="moral">
+    <h2>That's the whole job.</h2>
+    <p>
+      It reads the prices, learns who's winning, picks the smartest <em>profitable</em>
+      price, explains it like a colleague, refuses to lose money, and lets you apply it
+      in one click.
+    </p>
+  </section>
+
+</div>
+}
